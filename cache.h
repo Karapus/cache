@@ -5,9 +5,10 @@ struct page_t
 	int val;
 };
 
+template <typename KeyT>
 struct void_page_t
 {
-	int id;
+	KeyT id;
 };
 
 template <typename T = page_t, typename KeyT = int, typename GetEl = T (*) (KeyT)>

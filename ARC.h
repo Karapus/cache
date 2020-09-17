@@ -11,7 +11,7 @@ void_page_t get_void_page(KeyT key)
 template <typename KeyT>
 struct get_void_page_t
 {
-	void_page_t operator() (KeyT key)
+	void_page_t<KeyT> operator() (KeyT key)
 	{
 		return {key};
 	}
@@ -26,8 +26,8 @@ class ARC_cache_t : public cache_t<T, KeyT, GetEl>
 	LRU_cache_t<T, KeyT, GetEl> t2_;
 
 	get_void_page_t<KeyT> b1_get_el, b2_get_el;
-	LRU_cache_t<void_page_t, KeyT, get_void_page_t<KeyT>> b1_;
-	LRU_cache_t<void_page_t, KeyT, get_void_page_t<KeyT>> b2_;
+	LRU_cache_t<void_page_t<KeyT>, KeyT, get_void_page_t<KeyT>> b1_;
+	LRU_cache_t<void_page_t<KeyT>, KeyT, get_void_page_t<KeyT>> b2_;
 	
 	public:
 	bool lookup(const KeyT &key);
