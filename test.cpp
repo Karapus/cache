@@ -37,7 +37,8 @@ int main(int argc, char **argv)
 	in >> n >> size;
 	
 	ctr_t ARC_ctr;
-	ARC_cache_t<page_t, int, ctr_t> cache(size, ARC_ctr);
+	ARC_cache_t<page_t, int, ctr_t> ARC(size, ARC_ctr);
+	cache_t<page_t, int, ctr_t> &cache = ARC;
 
 	for (int id, i = 0; i < n && (in >> id); i++)
 		cache.lookup(id);

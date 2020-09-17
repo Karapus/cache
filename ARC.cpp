@@ -1,5 +1,5 @@
 template <typename T, typename KeyT, typename GetEl>
-bool ARC_cache_t<T, KeyT, GetEl>::lookup(KeyT key)
+bool ARC_cache_t<T, KeyT, GetEl>::lookup(const KeyT &key)
 {
 #ifdef DEBUG
 	std::cout << "Key = " << key << std::endl	\

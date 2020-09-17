@@ -5,7 +5,7 @@ struct page_t
 	int val;
 };
 
-struct void_page
+struct void_page_t
 {
 	int id;
 };
@@ -15,7 +15,7 @@ struct cache_t
 {
 	std::size_t sz_;
 	GetEl &get_elem_;
-	bool lookup(KeyT key);
+	virtual bool lookup(const KeyT &key) = 0;
 	cache_t(std::size_t size, GetEl &get_elem) :
 		sz_(size),
 		get_elem_(get_elem)

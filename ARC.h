@@ -2,7 +2,22 @@
 #include <iostream>
 #include "LRU.h"
 
-template <typename T, typename KeyT, typename GetEl>
+/*template <typename KeyT>
+void_page_t get_void_page(KeyT key)
+{
+	return {key};
+}*/
+
+template <typename KeyT>
+struct get_void_page_t
+{
+	void_page_t operator() (KeyT key)
+	{
+		return {key};
+	}
+};
+
+template <typename T = page_t, typename KeyT = int, typename GetEl = page_t (*) (const KeyT&)>
 class ARC_cache_t : public cache_t<T, KeyT, GetEl>
 {
 	std::size_t p_;
@@ -10,19 +25,20 @@ class ARC_cache_t : public cache_t<T, KeyT, GetEl>
 	LRU_cache_t<T, KeyT, GetEl> t1_;
 	LRU_cache_t<T, KeyT, GetEl> t2_;
 
-	LRU_cache_t<void_page, KeyT, GetEl> b1_;
-	LRU_cache_t<void_page, KeyT, GetEl> b2_;
+	get_void_page_t<KeyT> b1_get_el, b2_get_el;
+	LRU_cache_t<void_page_t, KeyT, get_void_page_t<KeyT>> b1_;
+	LRU_cache_t<void_page_t, KeyT, get_void_page_t<KeyT>> b2_;
 	
 	public:
-	bool lookup(KeyT key);
+	bool lookup(const KeyT &key);
 	void replace(const KeyT &key, bool in_b2 = false);
 
 	ARC_cache_t(std::size_t size, GetEl &get_elem) :
 		cache_t<T, KeyT, GetEl>(size, get_elem),
 		t1_(size, get_elem),
 		t2_(size, get_elem),
-		b1_(size, get_elem),
-		b2_(size, get_elem)
+		b1_(size, b1_get_el),
+		b2_(size, b2_get_el)
 	{}
 
 	friend std::ostream & operator << (std::ostream &os, const ARC_cache_t &cache)
