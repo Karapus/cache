@@ -51,9 +51,12 @@ class LRU_cache_t : public cache_t<T, KeyT, GetEl>
 	{}
 
 	friend ARC_cache_t<T, KeyT, GetEl>;
-	
-	template <typename To, typename KeyTo, typename GetElo>
-	friend std::ostream & operator << (std::ostream, const LRU_cache_t<To, KeyTo, GetElo>);
+	friend std::ostream & operator << (std::ostream &os, const LRU_cache_t<T, KeyT, GetEl> &cache)
+	{
+		for (auto it = cache.cache_.begin(); it != cache.cache_.end(); it++) 
+			os << it->first << ' ';
+		return os;
+	}
 };
 
 template <typename T, typename KeyT = int, typename GetEl = T (*) (KeyT)>
@@ -87,19 +90,22 @@ class ARC_cache_t : public cache_t<T, KeyT, GetEl>
 		b2_(size, get_elem)
 	{}
 
-	template <typename To, typename KeyTo, typename GetElo>
-	friend std::ostream & operator << (std::ostream, const ARC_cache_t<To, KeyTo, GetElo>);
+	friend std::ostream & operator << (std::ostream &os, const ARC_cache_t &cache)
+	{
+		std::cout					\
+		       << "T1 = " << cache.t1_ << std::endl	\
+		       << "B1 = " << cache.b1_ << std::endl	\
+		       << "T2 = " << cache.t2_ << std::endl	\
+		       << "B2 = " << cache.b2_ << std::endl;
+		return os;
+	}
 };
 
 template <typename T, typename KeyT, typename GetEl>
 bool ARC_cache_t<T, KeyT, GetEl>::lookup(KeyT key)
 {
 	std::cout << "Key = " << key << std::endl	\
-	       << "T1 = " << t1_ << std::endl	\
-	       << "B1 = " << b1_ << std::endl	\
-	       << "T2 = " << t2_ << std::endl	\
-	       << "B2 = " << b2_ << std::endl	\
-	       << std::endl;
+		<< *this << std::endl;
 
 	auto hit = t1_.map_.find(key);
 	if (hit != t1_.map_.end())
