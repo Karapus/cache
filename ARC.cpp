@@ -1,9 +1,10 @@
 template <typename T, typename KeyT, typename GetEl>
 bool ARC_cache_t<T, KeyT, GetEl>::lookup(KeyT key)
 {
+#ifdef DEBUG
 	std::cout << "Key = " << key << std::endl	\
 		<< *this << std::endl;
-
+#endif
 	auto hit = t1_.map_.find(key);
 	if (hit != t1_.map_.end())
 	{
