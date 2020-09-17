@@ -2,7 +2,13 @@
 #include <list>
 #include <iostream>
 
-template <typename T, typename KeyT = int, typename GetEl = T (*) (KeyT)>
+struct page_t
+{
+	int id;
+	int val;
+}
+
+template <typename T = page_t, typename KeyT = int, typename GetEl = T (*) (KeyT)>
 class cache_t
 {
 	protected:
@@ -16,10 +22,10 @@ class cache_t
 	{}
 };
 
-template <typename T, typename KeyT = int, typename GetEl = T (*) (KeyT)>
+template <typename T = page_t, typename KeyT = int, typename GetEl = T (*) (KeyT)>
 class ARC_cache_t;
 
-template <typename T, typename KeyT = int, typename GetEl = T (*) (KeyT)>
+template <typename T = page_t, typename KeyT = int, typename GetEl = T (*) (KeyT)>
 class LRU_cache_t : public cache_t<T, KeyT, GetEl>
 {
 	std::list<std::pair<KeyT, T>> cache_;
@@ -58,14 +64,6 @@ class LRU_cache_t : public cache_t<T, KeyT, GetEl>
 		return os;
 	}
 };
-
-template <typename T, typename KeyT = int, typename GetEl = T (*) (KeyT)>
-std::ostream & operator << (std::ostream &os, const LRU_cache_t<T, KeyT, GetEl> &cache)
-{
-	for (auto it = cache.cache_.begin(); it != cache.cache_.end(); it++) 
-		os << it->first << ' ';
-	return os;
-}
 
 template <typename T, typename KeyT, typename GetEl>
 class ARC_cache_t : public cache_t<T, KeyT, GetEl>
@@ -184,16 +182,4 @@ void ARC_cache_t<T, KeyT, GetEl>::replace(const KeyT &key, bool in_b2)
 		b2_.cache_.push_front({key, 0});
 		b2_.map_[key] = b2_.cache_.begin();
 	}
-}
-
-template <typename T, typename KeyT = int, typename GetEl = T (*) (KeyT)>
-std::ostream & operator << (std::ostream &os, const ARC_cache_t<T, KeyT, GetEl> &cache)
-{
-	std::cout					\
-	       << "T1 = " << cache.t1_ << std::endl	\
-	       << "B1 = " << cache.b1_ << std::endl	\
-	       << "T2 = " << cache.t2_ << std::endl	\
-	       << "B2 = " << cache.b2_ << std::endl	\
-	       << std::endl;
-	return os;
 }

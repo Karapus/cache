@@ -11,7 +11,6 @@ int ARC_val(int i)
 
 int main(int argc, char **argv)
 {
-	//std::istream in = (argc > 1) ? std::ifstream(argv[1]):std::istream();
 	std::istream *in_ptr;
 	if (argc > 1)
 	{
