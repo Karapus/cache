@@ -33,10 +33,13 @@ int main(int argc, char **argv)
 
 	std::istream &in  = *in_ptr;
 	
+	int n, size;
+	in >> n >> size;
+	
 	ctr_t ARC_ctr;
-	ARC_cache_t<page_t, int, ctr_t> cache(10, ARC_ctr);
-	int n;
-	while (in >> n)
-		cache.lookup(n);
-	std::cout << "ARC misses: " << ARC_ctr.res() << std::endl;
+	ARC_cache_t<page_t, int, ctr_t> cache(size, ARC_ctr);
+
+	for (int id, i = 0; i < n && (in >> id); i++)
+		cache.lookup(id);
+	std::cout << n - ARC_ctr.res() << std::endl;
 }
