@@ -1,20 +1,30 @@
 #include <iostream>
 #include <fstream>
-#include "ARC.cpp"
+#include "ARC.h"
 
-std::size_t ARC_ctr_;
-int ARC_val(int i)
+class ctr_t
 {
-	ARC_ctr_++;
-	return 0;
-}
+	std::size_t ctr_;
+	public:
+	page_t operator() (int key)
+	{
+		ctr_++;
+		return {key, 0};
+	}
+	std::size_t res()
+	{
+		return ctr_;
+	}
+	ctr_t() : ctr_(0)
+	{}
+};
 
 int main(int argc, char **argv)
 {
 	std::istream *in_ptr;
+	std::ifstream inf;
 	if (argc > 1)
 	{
-		std::ifstream inf;
 		inf.open(argv[1]);
 		in_ptr = &inf;
 	}
@@ -22,10 +32,11 @@ int main(int argc, char **argv)
 		in_ptr = &std::cin;
 
 	std::istream &in  = *in_ptr;
-		
-	ARC_cache_t<int> cache(10, ARC_val);
+	
+	ctr_t ARC_ctr;
+	ARC_cache_t<page_t, int, ctr_t> cache(10, ARC_ctr);
 	int n;
 	while (in >> n)
 		cache.lookup(n);
-	std::cout << "ARC misses: " << ARC_ctr_ << std::endl;
+	std::cout << "ARC misses: " << ARC_ctr.res() << std::endl;
 }

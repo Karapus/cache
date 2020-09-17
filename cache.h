@@ -1,3 +1,4 @@
+#pragma once
 struct page_t
 {
 	int id;
