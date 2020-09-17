@@ -2,22 +2,34 @@
 #include <list>
 #include <iostream>
 
-template <typename T, typename KeyT = int>
-struct LRU_cache_t
+template <typename T, typename KeyT = int, typename GetEl = T (*) (KeyT)>
+class cache_t
 {
+	protected:
 	std::size_t sz_;
-	T (*get_elem_)();
+	GetEl get_elem_;
+	public:
+	bool lookup(KeyT key);
+	cache_t(std::size_t size, T get_elem(KeyT key)) :
+		sz_(size),
+		get_elem_(get_elem)
+	{}
+};
 
+template <typename T, typename KeyT = int, typename GetEl = T (*) (KeyT)>
+class ARC_cache_t;
+
+template <typename T, typename KeyT = int, typename GetEl = T (*) (KeyT)>
+class LRU_cache_t : public cache_t<T, KeyT, GetEl>
+{
 	std::list<std::pair<KeyT, T>> cache_;
 	
 	typedef typename std::list<std::pair<KeyT, T>>::iterator ListIt;
 	std::unordered_map<KeyT, ListIt> map_;
 
-	bool lookup(KeyT key);
-
 	void emplace_mru(KeyT key)
 	{
-		cache_.push_front({key, get_elem_()});
+		cache_.push_front({key, cache_t<T, KeyT, GetEl>::get_elem_(key)});
 		map_[key] = cache_.begin();
 	}
 	
@@ -33,46 +45,54 @@ struct LRU_cache_t
 		cache_.pop_back();
 	}
 
-	LRU_cache_t(std::size_t size, T get_elem()) :
-		sz_(size),
-		get_elem_(get_elem)
+	public:
+	LRU_cache_t(std::size_t size, T get_elem(KeyT)) :
+		cache_t<T, KeyT, GetEl>(size, get_elem)
 	{}
-	friend std::ostream & operator << (std::ostream &os, LRU_cache_t &cache)
-	{
-		for (auto it = cache.cache_.begin(); it != cache.cache_.end(); it++) 
-			os << it->first << ' ';
-		return os;
-	}
+
+	friend ARC_cache_t<T, KeyT, GetEl>;
+	
+	template <typename To, typename KeyTo, typename GetElo>
+	friend std::ostream & operator << (std::ostream, const LRU_cache_t<To, KeyTo, GetElo>);
 };
 
-template <typename T, typename KeyT = int>
-struct ARC_cache_t
+template <typename T, typename KeyT = int, typename GetEl = T (*) (KeyT)>
+std::ostream & operator << (std::ostream &os, const LRU_cache_t<T, KeyT, GetEl> &cache)
 {
-	std::size_t sz_;
-	std::size_t p_;
-	T (*get_elem_)();
+	for (auto it = cache.cache_.begin(); it != cache.cache_.end(); it++) 
+		os << it->first << ' ';
+	return os;
+}
 
-	LRU_cache_t<T, KeyT> t1_;
-	LRU_cache_t<T, KeyT> t2_;
+template <typename T, typename KeyT, typename GetEl>
+class ARC_cache_t : public cache_t<T, KeyT, GetEl>
+{
+	std::size_t p_;
+
+	LRU_cache_t<T, KeyT, GetEl> t1_;
+	LRU_cache_t<T, KeyT, GetEl> t2_;
 
 	LRU_cache_t<int, KeyT> b1_;
 	LRU_cache_t<int, KeyT> b2_;
-
+	
+	public:
 	bool lookup(KeyT key);
 	void replace(const KeyT &key, bool in_b2 = false);
 
-	ARC_cache_t(std::size_t size, T get_elem()) :
-		sz_(size),
-		get_elem_(get_elem),
+	ARC_cache_t(std::size_t size, T get_elem(KeyT)) :
+		cache_t<T, KeyT, GetEl>(size, get_elem),
 		t1_(size, get_elem),
 		t2_(size, get_elem),
 		b1_(size, get_elem),
 		b2_(size, get_elem)
 	{}
+
+	template <typename To, typename KeyTo, typename GetElo>
+	friend std::ostream & operator << (std::ostream, const ARC_cache_t<To, KeyTo, GetElo>);
 };
 
-template <typename T, typename KeyT>
-bool ARC_cache_t<T, KeyT>::lookup(KeyT key)
+template <typename T, typename KeyT, typename GetEl>
+bool ARC_cache_t<T, KeyT, GetEl>::lookup(KeyT key)
 {
 	std::cout << "Key = " << key << std::endl	\
 	       << "T1 = " << t1_ << std::endl	\
@@ -102,7 +122,7 @@ bool ARC_cache_t<T, KeyT>::lookup(KeyT key)
 	auto ghost_hit = b1_.map_.find(key);
 	if (ghost_hit != b1_.map_.end())
 	{
-		p_ = std::min(t1_.sz_ + ((b1_.cache_.size() >= b2_.cache_.size()) ? 1 : b2_.cache_.size()/b1_.cache_.size()), sz_);
+		p_ = std::min(t1_.sz_ + ((b1_.cache_.size() >= b2_.cache_.size()) ? 1 : b2_.cache_.size()/b1_.cache_.size()), cache_t<T, KeyT, GetEl>::sz_);
 		replace(key);
 		t2_.emplace_mru(key);
 		b1_.erase(ghost_hit);
@@ -119,9 +139,9 @@ bool ARC_cache_t<T, KeyT>::lookup(KeyT key)
 		return false;
 	}
 
-	if (t1_.cache_.size() + b1_.cache_.size() == sz_)
+	if (t1_.cache_.size() + b1_.cache_.size() == cache_t<T, KeyT, GetEl>::sz_)
 	{
-		if (t1_.cache_.size() < sz_)
+		if (t1_.cache_.size() < cache_t<T, KeyT, GetEl>::sz_)
 		{
 			b1_.erase_lru();
 			replace(key);
@@ -132,9 +152,9 @@ bool ARC_cache_t<T, KeyT>::lookup(KeyT key)
 	else 
 	{
 		std::size_t size = t1_.cache_.size() + t2_.cache_.size() + b1_.cache_.size() + b2_.cache_.size();
-		if (size >= sz_)
+		if (size >= cache_t<T, KeyT, GetEl>::sz_)
 		{
-			if (size == 2 * sz_)
+			if (size == 2 * cache_t<T, KeyT, GetEl>::sz_)
 				b2_.erase_lru();
 			replace(key);
 		}
@@ -143,8 +163,8 @@ bool ARC_cache_t<T, KeyT>::lookup(KeyT key)
 	return false;
 }
 
-template <typename T, typename KeyT>
-void ARC_cache_t<T, KeyT>::replace(const KeyT &key, bool in_b2)
+template <typename T, typename KeyT, typename GetEl>
+void ARC_cache_t<T, KeyT, GetEl>::replace(const KeyT &key, bool in_b2)
 {
 	if ((!t1_.cache_.empty() && t1_.cache_.size() > p_) || (in_b2 && t1_.cache_.size() == p_))
 	{
@@ -158,4 +178,16 @@ void ARC_cache_t<T, KeyT>::replace(const KeyT &key, bool in_b2)
 		b2_.cache_.push_front({key, 0});
 		b2_.map_[key] = b2_.cache_.begin();
 	}
+}
+
+template <typename T, typename KeyT = int, typename GetEl = T (*) (KeyT)>
+std::ostream & operator << (std::ostream &os, const ARC_cache_t<T, KeyT, GetEl> &cache)
+{
+	std::cout					\
+	       << "T1 = " << cache.t1_ << std::endl	\
+	       << "B1 = " << cache.b1_ << std::endl	\
+	       << "T2 = " << cache.t2_ << std::endl	\
+	       << "B2 = " << cache.b2_ << std::endl	\
+	       << std::endl;
+	return os;
 }
