@@ -33,12 +33,15 @@ int main(int argc, char **argv)
 
 	std::istream &in  = *in_ptr;
 	
-	int n, size;
-	in >> n >> size;
+	int size;
+	in >> size;
 	
 	ctr_t ARC_ctr;
 	ARC_cache_t<page_t, int, ctr_t> ARC(size, ARC_ctr);
 	cache_t<page_t, int, ctr_t> &cache = ARC;
+
+	int n;
+	in >> n;
 
 	for (int id, i = 0; i < n && (in >> id); i++)
 		cache.lookup(id);
