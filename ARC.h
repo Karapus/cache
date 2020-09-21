@@ -31,10 +31,11 @@ class ARC_cache_t : public cache_t<T, KeyT, GetEl>
 	
 	public:
 	bool lookup(const KeyT &key);
-	void replace(const KeyT &key, bool in_b2 = false);
+	void replace(bool in_b2 = false);
 
 	ARC_cache_t(std::size_t size, GetEl &get_elem) :
 		cache_t<T, KeyT, GetEl>(size, get_elem),
+		p_(0),
 		t1_(size, get_elem),
 		t2_(size, get_elem),
 		b1_(size, b1_get_el),
