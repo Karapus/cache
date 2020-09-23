@@ -34,14 +34,14 @@ class LRU_cache_t : public cache_t<T, KeyT, GetEl>
 		map_.erase(cache_.back().id);
 		cache_.pop_back();
 	}
-
+//	public:
 	LRU_cache_t(std::size_t size, GetEl get_elem_ptr) :
 		cache_t<T, KeyT, GetEl>(size, get_elem_ptr)
 	{}
 	bool lookup(const KeyT &key);
 
-//	template <typename T_ARC>
-//	friend class ARC_cache_t<T_ARC, KeyT, GetEl>;
+/*	template <typename T_ARC>
+	friend class ARC_cache_t<T_ARC, KeyT, GetEl>;*/
 };
 }
 #include "LRU.cpp"
