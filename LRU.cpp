@@ -1,5 +1,5 @@
 template <typename T, typename KeyT, typename GetEl>
-std::ostream & operator << (std::ostream &os, const LRU_cache_t<T, KeyT, GetEl> &cache)
+std::ostream & operator << (std::ostream &os, const cache::LRU_cache_t<T, KeyT, GetEl> &cache)
 {
 	for (auto it = cache.cache_.begin(); it != cache.cache_.end(); it++) 
 		os << it->id << ' ';
@@ -7,7 +7,7 @@ std::ostream & operator << (std::ostream &os, const LRU_cache_t<T, KeyT, GetEl> 
 }
 
 template <typename T, typename KeyT, typename GetEl>
-bool LRU_cache_t<T, KeyT, GetEl>::lookup(const KeyT &key)
+bool cache::LRU_cache_t<T, KeyT, GetEl>::lookup(const KeyT &key)
 /*{
 	return false;
 }*/

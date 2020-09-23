@@ -2,11 +2,12 @@
 #include <fstream>
 #include "ARC.h"
 
+namespace {
 class ctr_t
 {
 	std::size_t ctr_;
 	public:
-	page_t operator() (int key)
+	cache::page_t operator() (int key)
 	{
 		ctr_++;
 		return {key, 0};
@@ -18,6 +19,7 @@ class ctr_t
 	ctr_t() : ctr_(0)
 	{}
 };
+}
 
 int main(int argc, char **argv)
 {
@@ -37,8 +39,8 @@ int main(int argc, char **argv)
 	in >> size;
 	
 	ctr_t ARC_ctr;
-	ARC_cache_t<page_t, int, ctr_t> ARC(size, ARC_ctr);
-	cache_t<page_t, int, ctr_t> &cache = ARC;
+	cache::ARC_cache_t<cache::page_t, int, ctr_t *> ARC(size, &ARC_ctr);
+	cache::cache_t<cache::page_t, int, ctr_t *> &cache = ARC;
 
 	int n;
 	in >> n;

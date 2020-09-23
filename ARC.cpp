@@ -1,5 +1,5 @@
 template <typename T, typename KeyT, typename GetEl>
-bool ARC_cache_t<T, KeyT, GetEl>::lookup(const KeyT &key)
+bool cache::ARC_cache_t<T, KeyT, GetEl>::lookup(const KeyT &key)
 {
 #ifdef DEBUG
 	std::cout << "Key = " << key << std::endl	\
@@ -69,7 +69,7 @@ bool ARC_cache_t<T, KeyT, GetEl>::lookup(const KeyT &key)
 }
 
 template <typename T, typename KeyT, typename GetEl>
-void ARC_cache_t<T, KeyT, GetEl>::replace(bool in_b2)
+void cache::ARC_cache_t<T, KeyT, GetEl>::replace(bool in_b2)
 {
 	if ((!t1_.cache_.empty() && t1_.cache_.size() > p_) || (in_b2 && t1_.cache_.size() == p_))
 	{
