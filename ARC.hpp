@@ -12,7 +12,7 @@ struct void_page_t
 };
 
 template <typename T = page_t, typename KeyT = int, typename GetEl = T (*) (const KeyT&)>
-class ARC_cache_t : public cache_t<T, KeyT, GetEl>
+class ARC_cache_t
 {
 	static void_page_t<KeyT> get_void_page(const KeyT& key)
 	{
@@ -20,7 +20,9 @@ class ARC_cache_t : public cache_t<T, KeyT, GetEl>
 	}
 	
 	std::size_t p_;
-
+	std::size_t sz_;
+	GetEl const get_elem_ptr_;
+	
 	LRU_cache_t<T, KeyT, GetEl> t1_;
 	LRU_cache_t<T, KeyT, GetEl> t2_;
 
@@ -33,8 +35,9 @@ class ARC_cache_t : public cache_t<T, KeyT, GetEl>
 	bool lookup(const KeyT &key);
 
 	ARC_cache_t(std::size_t size, GetEl get_elem_ptr) :
-		cache_t<T, KeyT, GetEl>(size, get_elem_ptr),
 		p_(0),
+		sz_(size),
+		get_elem_ptr_(get_elem_ptr),
 		t1_(size, get_elem_ptr),
 		t2_(size, get_elem_ptr),
 		b1_(size, &get_void_page),
@@ -77,7 +80,7 @@ bool ARC_cache_t<T, KeyT, GetEl>::lookup(const KeyT &key)
 	auto ghost_hit = b1_.find(key);
 	if (b1_.inside(ghost_hit))
 	{
-		p_ = std::min(t1_.get_max_size() + ((b1_.get_size() >= b2_.get_size()) ? 1 : b2_.get_size()/b1_.get_size()), cache_t<T, KeyT, GetEl>::sz_);
+		p_ = std::min(t1_.get_max_size() + ((b1_.get_size() >= b2_.get_size()) ? 1 : b2_.get_size()/b1_.get_size()), sz_);
 		replace();
 		t2_.emplace_mru(key);
 		b1_.erase(ghost_hit);
@@ -94,9 +97,9 @@ bool ARC_cache_t<T, KeyT, GetEl>::lookup(const KeyT &key)
 		return false;
 	}
 
-	if (t1_.get_size() + b1_.get_size() == cache_t<T, KeyT, GetEl>::sz_)
+	if (t1_.get_size() + b1_.get_size() == sz_)
 	{
-		if (t1_.get_size() < cache_t<T, KeyT, GetEl>::sz_)
+		if (t1_.get_size() < sz_)
 		{
 			b1_.erase_lru();
 			replace();
@@ -107,9 +110,9 @@ bool ARC_cache_t<T, KeyT, GetEl>::lookup(const KeyT &key)
 	else 
 	{
 		std::size_t size = t1_.get_size() + t2_.get_size() + b1_.get_size() + b2_.get_size();
-		if (size >= cache_t<T, KeyT, GetEl>::sz_)
+		if (size >= sz_)
 		{
-			if (size == 2 * cache_t<T, KeyT, GetEl>::sz_)
+			if (size == 2 * sz_)
 				b2_.erase_lru();
 			replace();
 		}

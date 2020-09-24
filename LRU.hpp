@@ -3,14 +3,21 @@
 #include <list>
 #include <iostream>
 #include <cassert>
-#include "cache.hpp"
 
 namespace cache 
 {
+struct page_t
+{
+	int id;
+	int val;
+};
+
 template <typename T = page_t, typename KeyT = int, typename GetEl = T (*) (const KeyT&)>
-class LRU_cache_t : public cache_t<T, KeyT, GetEl>
+class LRU_cache_t
 {
 	std::list<T> cache_;
+	std::size_t sz_;
+	GetEl const get_elem_ptr_;
 	
 	using ListIt = typename std::list<T>::iterator;
 	std::unordered_map<KeyT, ListIt> map_;
@@ -20,7 +27,7 @@ class LRU_cache_t : public cache_t<T, KeyT, GetEl>
 	public:
 	void emplace_mru(const KeyT &key)
 	{
-		cache_.push_front((*cache_t<T, KeyT, GetEl>::get_elem_ptr_)(key));
+		cache_.push_front((*get_elem_ptr_)(key));
 		map_[key] = cache_.begin();
 	}
 	
@@ -56,6 +63,11 @@ class LRU_cache_t : public cache_t<T, KeyT, GetEl>
 		return map_.size();
 	}
 
+	std::size_t get_max_size() const
+	{
+		return sz_;
+	}
+
 	MapConstIt find(const KeyT& key) const
 	{
 		return map_.find(key);
@@ -67,7 +79,8 @@ class LRU_cache_t : public cache_t<T, KeyT, GetEl>
 	}
 
 	LRU_cache_t(std::size_t size, GetEl get_elem_ptr) :
-		cache_t<T, KeyT, GetEl>(size, get_elem_ptr)
+		sz_(size),
+		get_elem_ptr_(get_elem_ptr)
 	{}
 
 	bool lookup(const KeyT &key);
@@ -93,7 +106,7 @@ bool LRU_cache_t<T, KeyT, GetEl>::lookup(const KeyT &key)
 	auto hit = find(key);
 	if (!inside(hit))
 	{
-		if (get_size() == cache_t<T, KeyT, GetEl>::get_max_size())
+		if (get_size() == get_max_size())
 			erase_lru();
 		emplace_mru(key);
 		return false;

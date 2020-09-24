@@ -35,12 +35,11 @@ int main(int argc, char **argv)
 
 	std::istream &in  = *in_ptr;
 	
-	int size;
+	std::size_t size;
 	in >> size;
 	
 	ctr_t ARC_ctr;
-	cache::ARC_cache_t<cache::page_t, int, ctr_t *> ARC(size, &ARC_ctr);
-	cache::cache_t<cache::page_t, int, ctr_t *> &cache = ARC;
+	cache::ARC_cache_t<cache::page_t, int, ctr_t *> cache {size, &ARC_ctr};
 
 	int n;
 	in >> n;
