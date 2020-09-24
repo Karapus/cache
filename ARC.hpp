@@ -77,7 +77,7 @@ bool ARC_cache_t<T, KeyT, GetEl>::lookup(const KeyT &key)
 	auto ghost_hit = b1_.find(key);
 	if (b1_.inside(ghost_hit))
 	{
-		p_ = std::min(t1_.sz_ + ((b1_.get_size() >= b2_.get_size()) ? 1 : b2_.get_size()/b1_.get_size()), cache_t<T, KeyT, GetEl>::sz_);
+		p_ = std::min(t1_.get_max_size() + ((b1_.get_size() >= b2_.get_size()) ? 1 : b2_.get_size()/b1_.get_size()), cache_t<T, KeyT, GetEl>::sz_);
 		replace();
 		t2_.emplace_mru(key);
 		b1_.erase(ghost_hit);
@@ -87,7 +87,7 @@ bool ARC_cache_t<T, KeyT, GetEl>::lookup(const KeyT &key)
 	ghost_hit = b2_.find(key);
 	if (b2_.inside(ghost_hit))
 	{
-		p_ = std::max((int)t1_.sz_ - (int)((b2_.get_size() >= b1_.get_size()) ? 1 : b1_.get_size()/b2_.get_size()), 0);
+		p_ = std::max((int)t1_.get_max_size() - (int)((b2_.get_size() >= b1_.get_size()) ? 1 : b1_.get_size()/b2_.get_size()), 0);
 		replace(true);
 		t2_.emplace_mru(key);
 		b2_.erase(ghost_hit);

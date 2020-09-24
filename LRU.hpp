@@ -3,7 +3,7 @@
 #include <list>
 #include <iostream>
 #include <cassert>
-#include "cache.h"
+#include "cache.hpp"
 
 namespace cache 
 {
@@ -36,6 +36,13 @@ class LRU_cache_t : public cache_t<T, KeyT, GetEl>
 		cache_.pop_back();
 	}
 
+	void advance_to_mru(const MapConstIt &hit)
+	{
+		auto eltit = hit->second;
+		if (eltit != cache_.begin())
+			cache_.splice(cache_.begin(), cache_, eltit, std::next(eltit));
+	}
+	
 	KeyT get_lru_key() const
 	{
 		return cache_.back().id;
@@ -47,20 +54,6 @@ class LRU_cache_t : public cache_t<T, KeyT, GetEl>
 		assert(map_.size() == cache_.size());
 #endif
 		return map_.size();
-	}
-
-	friend void move(LRU_cache_t &src, LRU_cache_t &dest, const MapConstIt &hit)
-	{
-		dest.cache_.splice(dest.cache_.begin(), src.cache_, hit->second);
-                dest.map_.insert(*hit);
-                src.map_.erase(hit);
-	}
-
-	void advance_to_mru(const MapConstIt &hit)
-	{
-		auto eltit = hit->second;
-		if (eltit != cache_.begin())
-			cache_.splice(cache_.begin(), cache_, eltit, std::next(eltit));
 	}
 
 	MapConstIt find(const KeyT& key) const
@@ -79,6 +72,13 @@ class LRU_cache_t : public cache_t<T, KeyT, GetEl>
 
 	bool lookup(const KeyT &key);
 
+	friend void move(LRU_cache_t &src, LRU_cache_t &dest, const MapConstIt &hit)
+	{
+		dest.cache_.splice(dest.cache_.begin(), src.cache_, hit->second);
+                dest.map_.insert(*hit);
+                src.map_.erase(hit);
+	}
+
 	friend std::ostream & operator << (std::ostream &os, const LRU_cache_t &cache)
 	{
 		for (auto it = cache.cache_.begin(); it != cache.cache_.end(); it++) 
@@ -93,7 +93,7 @@ bool LRU_cache_t<T, KeyT, GetEl>::lookup(const KeyT &key)
 	auto hit = find(key);
 	if (!inside(hit))
 	{
-		if (get_size() == cache_t<T, KeyT, GetEl>::sz_)
+		if (get_size() == cache_t<T, KeyT, GetEl>::get_max_size())
 			erase_lru();
 		emplace_mru(key);
 		return false;
