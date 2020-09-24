@@ -1,6 +1,6 @@
 #include <iostream>
 #include <fstream>
-#include "ARC.h"
+#include "ARC.hpp"
 
 namespace {
 class ctr_t
@@ -12,7 +12,7 @@ class ctr_t
 		ctr_++;
 		return {key, 0};
 	}
-	std::size_t res()
+	std::size_t res() const
 	{
 		return ctr_;
 	}
