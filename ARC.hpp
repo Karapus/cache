@@ -46,7 +46,7 @@ class ARC_cache_t
 
 	friend std::ostream & operator << (std::ostream &os, const ARC_cache_t &cache)
 	{
-		std::cout					\
+		os						\
 		       << "T1 = " << cache.t1_ << std::endl	\
 		       << "B1 = " << cache.b1_ << std::endl	\
 		       << "T2 = " << cache.t2_ << std::endl	\
